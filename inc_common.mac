@@ -1,0 +1,83 @@
+; //////////////////////////////////////////////////////////////////////////////
+; // Screen
+; //////////////////////////////////////////////////////////////////////////////
+
+VAddr  = 40000			; video addr starts at
+ScrWid = 64.			; screen width in bytes
+
+VFieldAddr = ScrWid*16.*2+4+VAddr
+
+; //////////////////////////////////////////////////////////////////////////////
+; // Objects
+; //////////////////////////////////////////////////////////////////////////////
+
+COBJ_SPACE 			= ^x00	; $00[.] - Space
+COBJ_DIRT			= ^x01	; $01[A] - Dirt
+COBJ_BRICK			= ^x02	; $02[B] - Brick wall
+COBJ_MAGIC			= ^x03	; $03[C] - Magic wall
+COBJ_HIDDEN_OUTBOX		= ^x04	; $04[D] - Hidden outbox
+COBJ_OUTBOX			= ^x05	; $05[E] - Outbox
+COBJ_FRAGILE_STEEL		= ^x06	; $06[F] - Fragile steel wall
+COBJ_STEEL			= ^x07	; $07[G] - Steel wall
+COBJ_FIREFLY_LEFT		= ^x08	; $08[H] - Firefly (left)
+COBJ_FIREFLY_UP			= ^x09	; $09[I] - Firefly (up)
+COBJ_FIREFLY_RIGHT		= ^x0A	; $0a[J] - Firefly (right)
+COBJ_FIREFLY_DOWN		= ^x0B	; $0b[K] - Firefly (down)
+COBJ_FIREFLY_LEFT_SCAN		= ^x0C	; $0c[L] - *Firefly (left)
+COBJ_FIREFLY_UP_SCAN		= ^x0D	; $0d[M] - *Firefly (up)
+COBJ_FIREFLY_RIGHT_SCAN		= ^x0E	; $0e[N] - *Firefly (right)
+COBJ_FIREFLY_DOWN_SCAN		= ^x0F	; $0f[O] - *Firefly (down)
+COBJ_BOULDER			= ^x10	; $10[P] - Boulder (stationary)
+COBJ_BOULDER_SCAN		= ^x11	; $11[Q] - *Boulder (stationary)
+COBJ_BOULDER_FALL		= ^x12	; $12[R] - Boulder (falling)
+COBJ_BOULDER_FALL_SCAN		= ^x13	; $13[S] - *Boulder (falling)
+COBJ_DIAMOND			= ^x14	; $14[T] - Diamond (stationary)
+COBJ_DIAMOND_SCAN		= ^x15	; $15[U] - *Diamond (stationary)
+COBJ_DIAMOND_FALL		= ^x16	; $16[V] - Diamond (falling)
+COBJ_DIAMOND_FALL_SCAN		= ^x17	; $17[W] - *Diamond (falling)
+COBJ_EXP_SPACE_0		= ^x1B	; $1b[[] - Explosion to space (stage 0) (to be scanned explosions start here)
+COBJ_EXP_SPACE_1		= ^x1C	; $1c[\] - Explosion to space (stage 1) (scanned explosions start here)
+COBJ_EXP_SPACE_2		= ^x1D	; $1d[]] - Explosion to space (stage 2)
+COBJ_EXP_SPACE_3		= ^x1E	; $1e[^] - Explosion to space (stage 3)
+COBJ_EXP_SPACE_4		= ^x1F	; $1f[_] - Explosion to space (stage 4)
+COBJ_EXP_DIAMOND_0		= ^x20	; $20[ ] - Explosion to diamond (stage 0) (to be scanned explosions start here)
+COBJ_EXP_DIAMOND_1		= ^x21	; $21[!] - Explosion to diamond (stage 1) (scanned explosions start here)
+COBJ_EXP_DIAMOND_2		= ^x22	; $22["] - Explosion to diamond (stage 2)
+COBJ_EXP_DIAMOND_3		= ^x23	; $23[#] - Explosion to diamond (stage 3)
+COBJ_EXP_DIAMOND_4		= ^x24	; $24[$] - Explosion to diamond (stage 4)
+COBJ_INBOX			= ^x25	; $25[%] - Inbox (Rockford's initial position)
+COBJ_PREROCKFORD_1		= ^x26	; $26[&] - Pre-Rockford (stage 1)
+COBJ_PREROCKFORD_2		= ^x27	; $27['] - Pre-Rockford (stage 2)
+COBJ_PREROCKFORD_3		= ^x28	; $28[(] - Pre-Rockford (stage 3)
+COBJ_BUTTERFLY_DOWN		= ^x30	; $30[0] - Butterfly (down)
+COBJ_BUTTERFLY_LEFT		= ^x31	; $31[1] - Butterfly (left)
+COBJ_BUTTERFLY_UP		= ^x32	; $32[2] - Butterfly (up)
+COBJ_BUTTERFLY_RIGHT		= ^x33	; $33[3] - Butterfly (right)
+COBJ_BUTTERFLY_DOWN_SCAN 	= ^x34	; $34[4] - *Butterfly (down)
+COBJ_BUTTERFLY_LEFT_SCAN 	= ^x35	; $35[5] - *Butterfly (left)
+COBJ_BUTTERFLY_UP_SCAN		= ^x36	; $36[6] - *Butterfly (up)
+COBJ_BUTTERFLY_RIGHT_SCAN 	= ^x37	; $37[7] - *Butterfly (right)
+
+COBJ_AMOEBA			= ^x38	; $38[:] - Amoeba
+COBJ_AMOEBA_SCAN		= ^x39	; $39[;] - *Amoeba
+COBJ_ROCKFORD			= ^x3A	; $3a[8] - Rockford
+COBJ_ROCKFORD_SCAN		= ^x3B	; $3b[9] - *Rockford
+COBJ_ROCKFORD_RIGHT      	= ^x3C  ; oh that's mine addition
+COBJ_ROCKFORD_RIGHT_SCAN 	= ^x3D
+COBJ_ROCKFORD_LEFT       	= ^x3E
+COBJ_ROCKFORD_LEFT_SCAN  	= ^x3F
+
+; it's tiles #, not objects #
+ANIMATED_BEGIN		= 16.
+COLORED_ENDS		= 12.
+
+; //////////////////////////////////////////////////////////////////////////////
+; // SOUND
+; //////////////////////////////////////////////////////////////////////////////
+
+SND_BOOM 	= 1
+SND_TICK 	= 2
+SND_BOULDER	= 3
+SND_DIAMOND 	= 4
+SND_EMERGE 	= 5
+SND_DIRT	= 6

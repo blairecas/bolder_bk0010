@@ -1,0 +1,438 @@
+	.title	CPU
+	.enabl	LC, AMA
+	.list	MEB
+	.asect
+	.=1000
+
+@include inc_common.mac
+
+Start:	mtps	#200
+	mov	#1000, SP
+
+	; clear screen
+	mov	#1330, @#177664		; scroll screen to 0
+	mov	#40000, R5
+	mov	#20000, R3
+	clr	(R5)+
+	sob	R3, .-2
+
+	mov	#StpInt, @#4
+	mov	#200, @#6
+
+	mov	#KbdInt, @#60
+	mov	#Ap2Int, @#274
+	bic	#^B01000000, @#177660	; allow keyboard interrupt
+
+	; now all is set, allow interrupts
+	mtps	#0
+	clr	CurrentMode
+
+; main program cycle
+MainCycle:
+	; key 0 - reset
+	tst	Key0
+	beq	10$
+	clr	Key0
+	clr	CurrentMode
+10$:	; run timer
+	mov	#177777, @#177706
+	mov	#^B00010010, @#177712
+	; run procedures
+	mov	CurrentMode, R0
+	asl	R0
+	call	@MainCycleTable(R0)
+	; frame count and animations
+	inc	FrameCount
+	clr	Animation
+	bit	#^B1, FrameCount
+	bne	20$
+	mov	#100000, Animation
+	inc	AniCounter
+	bic	#^B1111111111111100, AniCounter
+20$:	; wait for timer (not needed though on real BK)
+	cmp	@#177710, #200000-4000
+	bhi	20$
+	; repeat cycle
+	br	MainCycle
+
+
+MainCycleTable:	
+	.word	MainReset		; 00. - reset
+	.word	MainMenu		; 01. - menu
+	.word	MainPrepare		; 02. - global prepare
+	.word	MainPrelevel		; 03. - level prepare
+	.word	MainLevel		; 04. - level play
+	.word	MainLevelEnd		; 05. - level ends
+
+
+; 00 - reset anything to a new
+MainReset:
+	call	ClearScreen
+	clr	FieldX
+	clr	FieldY
+	clr	NewFieldX
+	clr	NewFieldY
+	; draw logo
+	call	DrawLogo
+	; draw main menu
+	call	DrawMenu
+	call	UpdateMenu
+	call	PlayMusic
+	; start menu
+	inc	CurrentMode
+	return
+
+; 01 - main menu
+MainMenu:
+	; space - run game
+	tst	KeySpace
+	beq	10$
+	clr	KeySpace
+	call	ClearScreen
+	inc	CurrentMode
+	return
+10$:	; left - decrease level
+	tst	KeyLeft
+	beq	20$
+	clr	KeyLeft
+	tst	Level
+	ble	20$
+	dec	Level
+	jmp	MenuChanged
+20$:	; right - increase level
+	tst	KeyRight
+	beq	30$
+	clr	KeyRight
+	cmp	Level, #19.
+	bge	30$
+	inc	Level
+	jmp	MenuChanged
+30$:	; 1 - sound on off
+	tst	Key1
+	beq	40$
+	clr	Key1
+	com	NoSound
+	jmp	MenuChanged
+40$:	return
+
+
+; 02 - global prepare play
+MainPrepare:
+	inc	CurrentMode
+	return
+
+
+; 03 - level prepare
+MainPrelevel:
+	; set some vars
+	clr	Diamonds
+	clr	LevelCleared
+	clr	ExitOpened
+	mov	#1, AmoebaGrowing
+	clr	AmoebaCurCount
+	clr	InboxCount
+	clr	EmergingCount
+	; init field
+	call	FieldInit
+	call	FieldSetChanged
+	call	UpdateRockfordXYInbox
+	; center new screen on rockford
+	mov	RockfordX, NewFieldX
+	mov	RockfordY, NewFieldY
+	sub	#8., NewFieldX
+	sub	#7., NewFieldY
+	call	CorrectNewFieldXY
+	; upper strings and diamond numbers
+	call	PrintCaveStr
+	call	PrintDiamonds
+	; run it
+	inc	CurrentMode
+	return
+
+
+; 04 - play level
+MainLevel:
+	clr	DiamondsUpdate
+	clr	CurrentSound
+	call	ProcessField
+	mov	CurrentSound, R0
+	call	PlaySound
+	call	UpdateFieldXY
+	call	ScrollWindow
+	tst	WasScrolled
+	bne	10$
+	call	DrawChanged
+10$:	; if we need to update diamonds score
+	tst	DiamondsUpdate
+	beq	20$
+	call	PrintDiamonds
+20$:	; if we have no rockford long enough - reset level
+	inc	NoRockford
+	cmp	NoRockford, #40.
+	ble	30$
+	; go to level prepare
+	dec	CurrentMode
+	br	99$
+30$:	; if we get enough diamonds and exit wasn't opened - open it
+	tst	ExitOpened
+	bne	40$
+	cmp	Diamonds, DiamondsNeeded
+	blo	40$
+	inc	ExitOpened
+	mov	#SND_EMERGE, R0
+	call	PlaySound
+	call	XorScreen
+	call	XorScreen
+	; TODO: visual of exit is opened
+40$:	tst	LevelCleared
+	beq	50$
+	; level is finished
+	clr	InboxCount		; use it as a timer for level end wait cycle
+	call	FieldSetChanged		; mark all objects as 'need to draw'
+	inc	CurrentMode
+	br	99$
+50$:	; Key 5 - reset level
+	tst	Key5
+	beq	60$
+	clr	Key5
+	dec	CurrentMode
+	br	99$
+60$:	; Space - center Rockford
+	tst	KeySpace
+	beq	99$
+	clr	KeySpace
+	call	CenterRockford
+99$:	return
+
+
+; 05 - level ends
+MainLevelEnd:
+	; wait some time
+	inc	InboxCount
+	cmp	InboxCount, #22.
+	bgt	90$
+	call	ProcessFieldEndlevel
+	call	DrawChanged
+	return
+90$:	; advance level
+	inc	Level
+	cmp	Level, #19.
+	ble	92$
+	clr	Level
+92$:	; go to level prepare
+	mov	#03., CurrentMode
+	return
+
+
+; update menu with changes
+MenuChanged:
+	mov	#SND_TICK, R0
+	call	PlaySound
+	call	UpdateMenu
+	return
+
+
+; //////////////////////////////////////////////////////////////////////////////
+; // UTILS 
+; //////////////////////////////////////////////////////////////////////////////
+
+@include inc_cpu_utils.mac
+
+; 'empty' interrupt
+RtiAdr:	inc	(PC)+
+RtiCnt:	.word	0
+	rti
+
+StpInt:	sub	#2, (SP)
+	rti
+
+Ap2Int:
+	inc	KeyShift
+
+KbdInt:	mov	R0, -(SP)
+	mov	R1, -(SP)
+	mov	@#177662, R0
+	mov	R0, KeyCurrent
+	mov	#KeysBegin, R1
+10$:	clr	(R1)
+	cmp	R0, 2(R1)
+	bne	20$
+	inc	(R1)
+20$:	cmp	(R1)+, (R1)+
+	cmp	R1, #KeysEnd
+	blo	10$
+99$:	mov	(SP)+, R1
+	mov	(SP)+, R0
+	rti
+
+ClearKeys:
+	clr	KeyShift
+	mov	#KeysBegin, R0
+	mov	#KeysEnd-KeysBegin/4, R3
+10$:	clr	(R0)+
+	inc	R0
+	inc	R0
+	sob	R3, 10$
+	return
+
+; random with linear-feedback shift register (Galois)
+; random -> R0
+Random:	clc
+	ror	(PC)+
+Lfsr00:	.word	126341 		; 0ACE1
+	bcc	Lfsr03
+	mov	(PC)+, R0
+Lfsr01:	.word	132000		; 0B400
+	xor	R0, Lfsr00
+Lfsr03:	mov	Lfsr00, R0
+	return
+
+; clear temp vars
+ClearTempVars:
+	mov	#tempVarsStart, R0
+	mov	#tempVarsEnd-tempVarsStart/2, R3
+	clr	(R0)+
+	sob	R3, .-2
+	return
+
+; clear screen
+ClearScreen:
+	mov	#VADDR, R5
+	mov	#20000/4, R3
+	clr	R2
+10$:	mov	R2, (R5)+
+	mov	R2, (R5)+
+	mov	R2, (R5)+
+	mov	R2, (R5)+
+	sob	R3, 10$
+	return
+
+; xor screen
+XorScreen:
+	mov	#VADDR, R5
+	mov	#20000/4, R3
+	mov	#177777, R2
+10$:	xor	R2, (R5)+
+	xor	R2, (R5)+
+	xor	R2, (R5)+
+	xor	R2, (R5)+
+	sob	R3, 10$
+	return
+
+; //////////////////////////////////////////////////////////////////////////////
+; // DATA
+; //////////////////////////////////////////////////////////////////////////////
+
+CurrentMode:		.word	0
+DebugMode:		.word	177777
+RgbMode:		.word	0
+CpuWaitCount:		.word	0
+FrameCount:		.word	0
+Pause:			.word	0
+NoSound:		.word	0
+
+Level:			.word	0
+LevelAddr:		.word	0
+LevelColor:		.word	0
+LevelCleared:		.word	0
+DiamondsNeeded:		.word	0
+Diamonds:		.word	0
+DiamondsUpdate:		.word	0
+ExitOpened:		.word	0
+
+FieldX:			.word	0		; offset on screen by X-tiles
+FieldY:			.word	0		; offset on screen by Y-tiles
+NewFieldX:		.word	0
+NewFieldY:		.word	0
+WasScrolled:		.word	0
+
+Animation:		.word	0
+AniCounter:		.word	0
+InboxCount:		.word	0
+EmergingCount:		.word	0
+
+NoRockford:		.word	0
+RockfordX:		.word	0
+RockfordY:		.word	0
+RockfordDir:		.word	0
+BoulderMoving:		.word	0
+
+AmoebaCount:		.word	0
+AmoebaCurCount:		.word	0
+AmoebaCanGrow:		.word	0
+AmoebaGrowing:		.word	0
+
+CurrentSound:		.word	0
+
+; keyboard
+KeyCurrent:	.word	0
+KeyShift:	.word	0
+
+KeysBegin:
+Key0:		.word	0, ^B110000
+Key1:		.word	0, ^B110001
+Key2:		.word	0, ^B110010
+Key5:		.word	0, ^B110101
+KeyUp:		.word	0, ^B011010
+KeyDown:	.word	0, ^B011011
+KeyLeft:	.word	0, ^B001000
+KeyRight:	.word	0, ^B011001
+KeySpace:	.word	0, ^B100000
+KeysEnd:
+
+; temp vars
+tempVarsStart:
+varAddr:		.word	0
+varObject:		.word	0
+varCmd:			.word	0
+varX:			.word	0
+varY:			.word	0
+varDx:			.word	0
+varDy:			.word	0
+varLength:		.word	0
+varDir:			.word	0
+varFill:		.word	0
+tempR0:			.word	0
+tempR1:			.word	0
+tempR2:			.word	0
+tempR3:			.word	0
+tempR4:			.word	0
+tempR5:			.word	0
+tempVarsEnd:
+
+@include inc_cpu_levels.mac
+@include inc_cpu_sprites.mac
+
+@include inc_cpu_font.mac
+LogoSprData = 43.*16. + FontCpuData
+
+FieldYTable:
+	.word	80.*00. + Field
+	.word	80.*01. + Field
+	.word	80.*02. + Field
+	.word	80.*03. + Field
+	.word	80.*04. + Field
+	.word	80.*05. + Field
+	.word	80.*06. + Field
+	.word	80.*07. + Field
+	.word	80.*08. + Field
+	.word	80.*09. + Field
+	.word	80.*10. + Field
+	.word	80.*11. + Field
+	.word	80.*12. + Field
+	.word	80.*13. + Field
+	.word	80.*14. + Field
+	.word	80.*15. + Field
+	.word	80.*16. + Field
+	.word	80.*17. + Field
+	.word	80.*18. + Field
+	.word	80.*19. + Field
+	.word	80.*20. + Field
+	.word	80.*21. + Field
+
+; game field data at the end of program
+Field = .
+FieldEnd = 40.*22.*2 + Field
+
+
+	.end	Start
