@@ -413,6 +413,8 @@ PrintDiamonds:
 
 ; play sound (R0 - #)
 PlaySound:
+	tst	NoSound
+	bne	99$
 	asl	R0
 	beq	99$
 	mov	SoundTable(R0), R0
@@ -459,6 +461,8 @@ PlayNote:
 
 ; plays music (just one music is here)
 PlayMusic:
+	tst	NoSound
+	bne	99$
 	clr	KeyCurrent
 	mov	#Music001, R5
 10$:	movb	(R5)+, R0
