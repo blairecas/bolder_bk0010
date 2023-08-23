@@ -434,15 +434,16 @@ PlaySound:
 	asr	R3
 	asr	R3
 	bis	#100, @#177716
-20$:	sob	R3, 20$
+	sob	R3, .
 	mov	(R0)+, R3
 	beq	99$
 	asr	R3
 	asr	R3
 	bic	#100, @#177716
-30$:	sob	R3, 30$
+	sob	R3, .
 	br	10$
-99$:	return
+99$:	bic	#100, @#177716
+	return
 
 ; playing note (R0 - #)
 PlayNote:
