@@ -63,6 +63,7 @@ MainCycleTable:
 	.word	MainPrelevel		; 03. - level prepare
 	.word	MainLevel		; 04. - level play
 	.word	MainLevelEnd		; 05. - level ends
+	.word	MainJoySet		; 06. - set joystick
 
 
 ; 00 - reset anything to a new
@@ -107,13 +108,18 @@ MainMenu:
 	bge	30$
 	inc	Level
 	jmp	MenuChanged
-30$:	; 1 - sound on off
-	tst	Key1
+30$:	; 2 - sound on off
+	tst	Key2
 	beq	40$
-	clr	Key1
+	clr	Key2
 	com	NoSound
 	jmp	MenuChanged
-40$:	return
+40$:	; 1 - set joystick
+	tst	Key1
+	beq	50$
+	clr	Key1
+	mov	#6., CurrentMode
+50$:	return
 
 
 ; 02 - global prepare play
@@ -231,6 +237,91 @@ MenuChanged:
 	call	UpdateMenu
 	return
 
+; 06 - set joystick
+MainJoySet:
+	call	ClearScreen
+	mov	#ScrWid*16.+4.+VAddr, VarY
+	mov	#MsgJoy000, R0
+	call	PrintStrVarY
+	mov	#MsgJoy001, R0
+	call	PrintStrVarY
+	add	#ScrWid*12., VarY
+	mov	#MsgJoy002, R0
+	call	PrintStrVarY
+	call	TestPort14
+	bcs	10$
+	mov	#MsgBadPort, R0
+	call	PrintStrVarY
+	br	20$
+10$:	mov	#MsgOkPort, R0
+	call	PrintStrVarY
+20$:	add	#ScrWid*12., VarY
+	; set keys
+	mov	#MsgJoyTbl, VarAddr
+	mov	#JoyKeys, TempR0
+	mov	#5., TempR3
+30$:	mov	@VarAddr, R0
+	add	#2., VarAddr
+	call	PrintStrVarY
+	mov	TempR0, R0
+	call	SetJoyKey
+	tst	KeyCurrent
+	bne	90$
+	add	#4., TempR0
+	dec	TempR3
+	bne	30$
+90$:	clr	CurrentMode
+	return
+
+; wait for joy input (or keypress)
+; R0 - where to put joy input (without bad bits)
+SetJoyKey:
+	clr	KeyCurrent
+	; wait for press
+10$:	tst	KeyCurrent
+	bne	99$
+	mov	@#177714, R1
+	bic	JoyBadBits, R1
+	beq	10$
+	mov	R1, (R0)
+	; wait for release
+20$:	tst	KeyCurrent
+	bne	99$
+	mov	@#177714, R1
+	bic	JoyBadBits, R1
+	bne	20$
+99$:	return
+
+
+MsgJoy000:	.asciz	<2>"JOYSTICK SETUP"
+MsgJoy001:	.asciz	<2>"ANY KEY"<1>":"<3>" EXIT"
+MsgJoy002:	.asciz	<2>"CHECKING PORT"
+MsgBadPort:	.asciz	<3>"PORT "<2>"177714 "<3>"HAVE BAD BITS"
+MsgOkPort:	.asciz	<3>"PORT OK"
+
+MsgJoy010:	.asciz	<3>"PRESS "<2>"UP"
+MsgJoy011:	.asciz	<3>"PRESS "<2>"DOWN"
+MsgJoy012:	.asciz	<3>"PRESS "<2>"LEFT"
+MsgJoy013:	.asciz	<3>"PRESS "<2>"RIGHT"
+MsgJoy014:	.asciz	<3>"PRESS "<2>"FIRE"
+		.even
+
+MsgJoyTbl:	.word	MsgJoy010, MsgJoy011, MsgJoy012, MsgJoy013, MsgJoy014
+
+; Manwe's procedure for check bad port
+TestPort14:
+	clr	R0
+	clr	KeyCurrent
+10$:	tst	KeyCurrent
+	bne	90$
+	mov	@#177714, JoyBadBits
+	beq	90$
+	sob	R0, 10$
+	; port bits are bad
+	tst	(PC)+
+90$:	sec
+	return
+
 
 ; //////////////////////////////////////////////////////////////////////////////
 ; // UTILS 
@@ -274,6 +365,20 @@ ClearKeys:
 	inc	R0
 	sob	R3, 10$
 	return
+
+SetKeysFromJoy:
+	mov	@#177714, R0
+	bic	JoyBadBits, R0
+	beq	99$
+	mov	#JoyKeys, R0
+	mov	#5., R3
+10$:	bit	(R0)+, @#177714
+	beq	20$
+	inc	@(R0)
+20$:	inc	R0
+	inc	R0
+	sob	R3, 10$
+99$:	return
 
 ; random with linear-feedback shift register (Galois)
 ; random -> R0
@@ -379,6 +484,15 @@ KeyLeft:	.word	0, ^B001000
 KeyRight:	.word	0, ^B011001
 KeySpace:	.word	0, ^B100000
 KeysEnd:
+
+; joystick
+JoyBadBits:	.word	0
+JoyKeys:
+	.word	1,  KeyUp
+	.word	4,  KeyDown
+	.word	10, KeyLeft
+	.word	2,  KeyRight
+	.word	40, KeyShift
 
 ; temp vars
 tempVarsStart:

@@ -290,9 +290,16 @@ PrintStr:
 	br	10$
 99$:	return 
 
-MsgMenu002:	.asciz	<2>"   1"<1>": "<3>"SOUND "
-MsgMenu003:	.asciz	<2>"   5"<1>": "<3>"LEVEL RESET"
+PrintStrVarY:
+	mov	VarY, R5
+	call	PrintStr
+	add	#ScrWid*12., VarY
+	return
+
 MsgMenu004:	.asciz	<2>"   0"<1>": "<3>"MAIN MENU"
+MsgMenu001:	.asciz	<2>"   1"<1>": "<3>"SET JOYSTICK"
+MsgMenu002:	.asciz	<2>"   2"<1>": "<3>"SOUND "
+MsgMenu003:	.asciz	<2>"   5"<1>": "<3>"LEVEL RESET"
 MsgMenu006:	.asciz	<3>"  PRESS "<2>"SPACE"
 
 MsgMenu010:	.asciz	<1>"SELECT CAVE"<1>":"
@@ -314,19 +321,23 @@ DrawMenu:
 	mov	#MsgMenu010, R0
 	call	PrintStr
 	; 0
-	mov	#ScrWid*180.+12.+VADDR, R5
+	mov	#ScrWid*170.+12.+VADDR, R5
 	mov	#MsgMenu004, R0
 	call	PrintStr
+	; 1
+	mov	#ScrWid*182.+12.+VADDR, R5
+	mov	#MsgMenu001, R0
+	call	PrintStr
 	; 2
-	mov	#ScrWid*192.+12.+VADDR, R5
+	mov	#ScrWid*194.+12.+VADDR, R5
 	mov	#MsgMenu002, R0
 	call	PrintStr
 	; 5
-	mov	#ScrWid*204.+12.+VADDR, R5
+	mov	#ScrWid*206.+12.+VADDR, R5
 	mov	#MsgMenu003, R0
 	call	PrintStr
 	; START
-	mov	#ScrWid*232.+16.+VADDR, R5
+	mov	#ScrWid*228.+16.+VADDR, R5
 	mov	#MsgMenu006, R0
 	call	PrintStr
 	return
@@ -346,7 +357,7 @@ UpdateMenu:
 	tst	NoSound
 	beq	10$
 	mov	#MsgMenu021, R0
-10$:	mov	#ScrWid*192.+36.+VADDR, R5
+10$:	mov	#ScrWid*194.+36.+VADDR, R5
 	call	PrintStr
 	return
 
@@ -1285,7 +1296,9 @@ ProcessRockford:
 	bit 	#100, @#177716
 	beq	12$
 	call	ClearKeys
-12$:	; need move right?
+12$:	; set keys from joystick
+	call	SetKeysFromJoy
+	; need move right?
 	tst	KeyRight
 	beq	20$
 	mov	#+2., RockfordDir
