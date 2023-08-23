@@ -433,17 +433,16 @@ PlaySound:
 	beq	99$
 	asr	R3
 	asr	R3
-	bis	#100, @#177716
+	mov	#220, @#177716
 	sob	R3, .
 	mov	(R0)+, R3
 	beq	99$
 	asr	R3
 	asr	R3
-	bic	#100, @#177716
+	mov	#320, @#177716
 	sob	R3, .
 	br	10$
-99$:	bic	#100, @#177716
-	return
+99$:	return
 
 ; playing note (R0 - #)
 PlayNote:
@@ -456,10 +455,10 @@ PlayNote:
 	; beeper on-off cycle
 10$:	mov	R0, 20$+2			; why not use registers for cycles?
 	mov	R0, 30$+2			; .. don't know %)
-	bis	#100, @#177716
+	mov	#220, @#177716
 20$:	dec	#000000
 	bne	20$
-	bic	#100, @#177716
+	mov	#320, @#177716
 30$:	dec	#000000
 	bne	30$
 40$:	cmp	@#177710, #200000-2200		; need adjustment by R0
