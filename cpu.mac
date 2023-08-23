@@ -84,6 +84,8 @@ MainReset:
 	call	UpdateMenu
 	call	PlayMusic
 	; start menu
+	clr	KeySpace
+	clr	KeyShift
 	inc	CurrentMode
 	return
 
