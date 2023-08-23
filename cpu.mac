@@ -27,6 +27,10 @@ Start:	mtps	#200
 	mtps	#0
 	clr	CurrentMode
 
+	mov	#ScrWid*16.+4.+VAddr, VarY
+	call	TestJoyPort
+	call	ClearScreen
+
 ; main program cycle
 MainCycle:
 	; key 0 - reset
@@ -50,7 +54,7 @@ MainCycle:
 	inc	AniCounter
 	bic	#^B1111111111111100, AniCounter
 20$:	; wait for timer (not needed though on real BK)
-	cmp	@#177710, #200000-4000
+	cmp	@#177710, #200000-6000
 	bhi	20$
 	; repeat cycle
 	br	MainCycle
@@ -250,16 +254,8 @@ MainJoySet:
 	mov	#MsgJoy001, R0
 	call	PrintStrVarY
 	add	#ScrWid*12., VarY
-	mov	#MsgJoy002, R0
-	call	PrintStrVarY
-	call	TestPort14
-	bcs	10$
-	mov	#MsgBadPort, R0
-	call	PrintStrVarY
-	br	20$
-10$:	mov	#MsgOkPort, R0
-	call	PrintStrVarY
-20$:	add	#ScrWid*12., VarY
+	call	TestJoyPort
+	add	#ScrWid*12., VarY
 	; set keys
 	mov	#MsgJoyTbl, VarAddr
 	mov	#JoyKeys, TempR0
@@ -299,7 +295,7 @@ SetJoyKey:
 
 MsgJoy000:	.asciz	<2>"JOYSTICK SETUP"
 MsgJoy001:	.asciz	<2>"ANY KEY"<1>":"<3>" EXIT"
-MsgJoy002:	.asciz	<2>"CHECKING PORT"
+MsgJoy002:	.asciz	<2>"CHECKING JOY PORT"
 MsgBadPort:	.asciz	<3>"PORT "<2>"177714 "<3>"HAVE BAD BITS"
 MsgOkPort:	.asciz	<3>"PORT OK"
 
@@ -326,6 +322,19 @@ TestPort14:
 90$:	sec
 	return
 
+TestJoyPort:
+	mov	#MsgJoy002, R0
+	call	PrintStrVarY
+	call	TestPort14
+	bcs	10$
+	mov	#MsgBadPort, R0
+	call	PrintStrVarY
+	br	20$
+10$:	mov	#MsgOkPort, R0
+	call	PrintStrVarY
+20$:	clr	R3
+	sob	R3, .
+	return
 
 ; //////////////////////////////////////////////////////////////////////////////
 ; // UTILS 
