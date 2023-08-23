@@ -85,10 +85,14 @@ MainReset:
 
 ; 01 - main menu
 MainMenu:
-	; space - run game
-	tst	KeySpace
+	call	SetKeysFromJoy
+	; space / shift - run game
+	mov	KeySpace, R0
+	add	KeyShift, R0
+	tst	R0
 	beq	10$
 	clr	KeySpace
+	clr	KeyShift
 	call	ClearScreen
 	inc	CurrentMode
 	return

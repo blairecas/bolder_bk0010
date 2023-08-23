@@ -478,9 +478,12 @@ PlayMusic:
 	mov	#Music001, R5
 10$:	movb	(R5)+, R0
 	beq	99$
+	call	PlayNote
+	mov	@#177714, R0
+	bic	JoyBadBits, R0
+	bne	99$
 	tst	KeyCurrent
 	bne	99$
-	call	PlayNote
 	br	10$
 99$:	return
 
