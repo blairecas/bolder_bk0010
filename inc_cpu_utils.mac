@@ -210,23 +210,19 @@ LogoData:
 	.radix	10
 	.byte	5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
 	.byte	5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5
-
 	.byte	5, 0, 6, 5, 5, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5
 	.byte	5, 0, 6, 5, 0, 6, 0, 6, 5, 5, 0, 6, 0, 6, 0, 6, 0, 0, 0, 6, 5, 7, 0, 6, 5, 5, 0, 6, 5, 7, 0, 5
 	.byte	5, 0, 6, 5, 5, 8, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 6, 0, 6, 0, 6, 0, 0, 0, 6, 0, 6, 0, 5
 	.byte	5, 0, 6, 5, 5, 7, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 6, 0, 6, 0, 6, 5, 0, 0, 6, 5, 8, 0, 5
 	.byte	5, 0, 6, 5, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 6, 0, 6, 0, 6, 0, 0, 0, 6, 5, 7, 0, 5
 	.byte	5, 0, 6, 5, 5, 8, 0, 6, 5, 5, 0, 6, 5, 5, 0, 6, 5, 5, 0, 6, 5, 8, 0, 6, 5, 5, 0, 6, 0, 6, 0, 5
-	
 	.byte	5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5
-	
 	.byte	5, 0, 0, 0, 0, 0, 0, 6, 5, 5, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5
 	.byte	5, 0, 0, 0, 0, 0, 0, 6, 5, 0, 6, 0, 6, 5, 7, 0, 6, 5, 5, 0, 6, 0, 6, 0, 9,10,11, 0, 0, 0, 0, 5
 	.byte	5, 0, 0, 0, 0, 0, 0, 6, 5, 0, 6, 0, 6, 0, 6, 0, 6, 0, 0, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 5
 	.byte	5, 0, 0, 0, 0, 0, 0, 6, 5, 0, 6, 0, 6, 5, 5, 0, 6, 5, 5, 0, 6, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5
 	.byte	5, 0, 0, 0, 0, 0, 0, 6, 5, 0, 6, 0, 6, 0, 6, 0, 0, 0, 6, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 5
 	.byte	5, 0, 0, 0, 0, 0, 0, 6, 5, 5, 8, 0, 6, 0, 6, 0, 6, 5, 5, 0, 6, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 5
-	
 	.byte	5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5
 	.byte	5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
 	.radix	8
@@ -456,10 +452,10 @@ PlayNote:
 	; beeper on-off cycle
 10$:	mov	R0, 20$+2			; why not use registers for cycles?
 	mov	R0, 30$+2			; .. don't know %)
-	mov	#220, @#177716
+	mov	#320, @#177716
 20$:	dec	#000000
 	bne	20$
-	mov	#320, @#177716
+	mov	#220, @#177716
 30$:	dec	#000000
 	bne	30$
 40$:	cmp	@#177710, #200000-2200		; need adjustment by R0
@@ -1283,46 +1279,36 @@ ProcessRockfordAppear:
 99$:	jmp	ProcessField20
 
 
+tmpKeysDirs:
+	.word	KeyRight, +2.
+	.word	KeyLeft, -2.
+	.word	KeyDown, +80.
+	.word	KeyUp, -80.
+
 ; ROCKFORD
 ;
 ProcessRockford:
-	; 'no rockford' timer
-	clr	NoRockford
-	; reset rockford direction
-	mov	#COBJ_ROCKFORD_SCAN, (R5)
-	; it's animated - so need to update 'need to draw' flag 
-	bis	Animation, (R5)
+	clr	NoRockford			; 'no rockford' timer reset
+	mov	#COBJ_ROCKFORD_SCAN, (R5)	; reset rockford direction
+	bis	Animation, (R5)			; it's animated
 	; check keys off
 	bit 	#100, @#177716
 	beq	12$
 	call	ClearKeys
 12$:	; set keys from joystick
 	call	SetKeysFromJoy
-	; need move right?
-	tst	KeyRight
-	beq	20$
-	mov	#+2., RockfordDir
-	call	ProcessRockfordDir
-	jmp	ProcessField20
-20$:	; need move left?
-	tst	KeyLeft
+	; process keys
+	mov	#tmpKeysDirs, R0
+	mov	#4., R3
+20$:	tst	@(R0)+
 	beq	30$
-	mov	#-2., RockfordDir
-	call	ProcessRockfordDir
-	jmp	ProcessField20
-30$:	; need move down?
-	tst	KeyDown
-	beq	40$
-	mov	#+80., RockfordDir
-	call	ProcessRockfordDir
-	jmp	ProcessField20
-40$:	; need move up
-	tst	KeyUp
-	beq	50$
-	mov	#-80., RockfordDir
-	call	ProcessRockfordDir
-	jmp	ProcessField20
-50$:	clr	BoulderMoving		; reset boulder moving time if not keys were pressed
+	mov	(R0), RockfordDir
+	br	ProcessRockfordDir
+30$:	inc	R0
+	inc	R0
+	sob	R3, 20$
+50$:	; not moving
+	clr	BoulderMoving		; reset boulder moving time if not keys were pressed
 	mov	R5, R4
 	call	UpdateRockfordXY
 	jmp	ProcessField20
@@ -1403,7 +1389,8 @@ ProcessRockfordDir:
 92$:	mov	#100000, (R5)
 	mov	R0, (R4)
 	call	UpdateRockfordXY
-99$:	return
+99$:	jmp	ProcessField20
+
 
 ; update rockford X, Y from R4 - addr in field
 UpdateRockfordXY:
@@ -1478,89 +1465,43 @@ ProcessAmoeba:
 	jmp	ProcessField20
 
 
-; create explosion below R5, object is R0
-ExplodeBelow:
+tmpExpBelow:
+	.word	3. ; decrease explosion counter from this 
+	; because next step in field will process newly created explosion
+	; so we must decrease it a bit from this step
+	.word	-002., +000., +002.
+	.word	+078., +080., +082.
+	.word	+158., +160., +162.
+tmpExpCurrent:
+	.word	6.
+	.word	-082., -080., -078.
+	.word	-002., +000., +002.
+	.word	+078., +080., +082.
+
+; create explosion
+; R0 - object to which need to explode
+; R1 - explode table addr
+Explosion:
 	mov	#SND_BOOM, CurrentSound
-	; 0
-	cmpb	-2(R5), #COBJ_STEEL
-	beq	10$
-	mov	R0, -2(R5)
-10$:	; 1
-	cmpb	(R5), #COBJ_STEEL
-	beq	20$
-	mov	R0, (R5)
-20$:	; 2 we must rewind explosion by 1 from here (cause it will be scanned just on this sweep)
+	mov	#9., R3
+	mov	(R1)+, R2
+10$:	dec	R2
+	bne	20$
 	dec	R0
-	cmpb	2(R5), #COBJ_STEEL
-	beq	30$
-	mov	R0, 2(R5)
-30$:	; 3
-	cmpb	78.(R5), #COBJ_STEEL
-	beq	40$
-	mov	R0, 78.(R5)
-40$:	; 4
-	cmpb	80.(R5), #COBJ_STEEL
-	beq	50$
-	mov	R0, 80.(R5)
-50$:	; 5
-	cmpb	82.(R5), #COBJ_STEEL
-	beq	60$
-	mov	R0, 82.(R5)
-60$:	; 6
-	cmpb	158.(R5), #COBJ_STEEL
-	beq	70$
-	mov	R0, 158.(R5)
-70$:	; 7
-	cmpb	160.(R5), #COBJ_STEEL
-	beq	80$
-	mov	R0, 160.(R5)
-80$:	; 8
-	cmpb	162.(R5), #COBJ_STEEL
-	beq	90$
-	mov	R0, 162.(R5)
-90$:
+20$:	mov	R5, R4
+	add	(R1)+, R4
+	cmpb	(R4), #COBJ_STEEL
+	beq 	30$
+	mov	R0, (R4)
+30$:	sob	R3, 10$
 	jmp	ProcessField20
 
+; create explosion below R5, object is R0
+ExplodeBelow:
+	mov	#tmpExpBelow, R1
+	br	Explosion
 
 ; create explosion at R5, object is R0
 ExplodeCurrent:
-	mov	#SND_BOOM, CurrentSound
-	; 0
-	cmpb	-82.(R5), #COBJ_STEEL
-	beq	10$
-	mov	R0, -82.(R5)
-10$:	; 1
-	cmpb	-80.(R5), #COBJ_STEEL
-	beq	20$
-	mov	R0, -80.(R5)
-20$:	; 2
-	cmpb	-78.(R5), #COBJ_STEEL
-	beq	30$
-	mov	R0, -78.(R5)
-30$:	; 3
-	cmpb	-2.(R5), #COBJ_STEEL
-	beq	40$
-	mov	R0, -2.(R5)
-40$:	; 4
-	cmpb	(R5), #COBJ_STEEL
-	beq	50$
-	mov	R0, (R5)
-50$:	; 5 we must rewind explosion by 1 from here (cause it will be scanned just on this sweep)
-	dec	R0
-	cmpb	2(R5), #COBJ_STEEL
-	beq	60$
-	mov	R0, 2(R5)
-60$:	; 6
-	cmpb	78.(R5), #COBJ_STEEL
-	beq	70$
-	mov	R0, 78.(R5)
-70$:	; 7
-	cmpb	80.(R5), #COBJ_STEEL
-	beq	80$
-	mov	R0, 80.(R5)
-80$:	; 8
-	cmpb	82.(R5), #COBJ_STEEL
-	beq	90$
-	mov	R0, 82.(R5)
-90$:
-	jmp	ProcessField20
+	mov	#tmpExpCurrent, R1
+	br	Explosion

@@ -57,11 +57,11 @@
                     $g = $rgba['green'];
                     $b = $rgba['blue'];
                     // blue pixel
-                    if ($b > 127) $res = $res | 0b0100000000000000;
+                    if ($b > 127 && $b > $g && $b > $r) $res = $res | 0b0100000000000000;
                     // green pixel
-                    if ($g > 127) $res = $res | 0b1000000000000000;
+                    if ($g > 127 && $g > $b && $g > $r) $res = $res | 0b1000000000000000;
                     // red pixel
-                    if ($r > 127) $res = $res | 0b1100000000000000;
+                    if ($r > 127 && $r > $b && $r > $g) $res = $res | 0b1100000000000000;
                 }
                 array_push($tile, $res);
                 if ($res !== 0) $have_data = true;
