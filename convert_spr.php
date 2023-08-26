@@ -1,6 +1,6 @@
 <?php
 
-    $img = imagecreatefrompng('./graphics/Tiles.png');
+    $img = imagecreatefrompng($argv[1]);
     $width = imagesx($img);
     $height = imagesy($img);
     echo "Image: $width x $height\n";
