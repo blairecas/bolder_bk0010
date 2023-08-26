@@ -8,7 +8,7 @@
 
 Start:	mtps	#200
 	mov	#1000, SP
-
+ 
 	; clear screen
 	mov	#1330, @#177664		; scroll screen to 0
 	mov	#40000, R5
