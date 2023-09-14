@@ -11,10 +11,7 @@ Start:	mtps	#200
  
 	; clear screen
 	mov	#1330, @#177664		; scroll screen to 0
-	mov	#40000, R5
-	mov	#20000, R3
-	clr	(R5)+
-	sob	R3, .-2
+	call	ClearScreen
 
 	mov	#StpInt, @#4
 	mov	#200, @#6
@@ -516,6 +513,7 @@ varObject:		.word	0
 varCmd:			.word	0
 varX:			.word	0
 varY:			.word	0
+menuShiftY:		.word	0
 varDx:			.word	0
 varDy:			.word	0
 varLength:		.word	0

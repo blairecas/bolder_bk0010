@@ -307,33 +307,56 @@ MsgCave:	.asciz	<1>"CAVE: "<2>"A                    "
 MsgDiaNeeded:	.asciz	<3>"00"
 MsgDiamonds:	.asciz	<2>"00"
 
+MsgNeoVersion:	.asciz	<1>"GRAPHICS BY "<2>"NEO SPECTRUMAN"
+
 		.even
 
 DiaNeededSize:	.word	1
 
 DrawMenu:
-	; select cave
+	clr	menuShiftY
+	; check for vanilla version
+	mov	#TilesCpuData, R0
+	mov	#1000, R3
+	clr	R1
+10$:	add	(R0)+, R1
+	sob	R3, 10$
+	cmp	R1, #43323
+	beq	20$
+	; lets assume it's neo spectruman version
+	mov	#ScrWid*8., menuShiftY
+	mov	#ScrWid*138.+6.+VADDR, R5
+	mov	#MsgNeoVersion, R0
+	call	PrintStr
+
+20$:	; select cave
 	mov	#ScrWid*150.+18.+VADDR, R5
+	add	menuShiftY, R5
 	mov	#MsgMenu010, R0
 	call	PrintStr
 	; 0
 	mov	#ScrWid*170.+12.+VADDR, R5
+	add	menuShiftY, R5
 	mov	#MsgMenu004, R0
 	call	PrintStr
 	; 1
 	mov	#ScrWid*182.+12.+VADDR, R5
+	add	menuShiftY, R5
 	mov	#MsgMenu001, R0
 	call	PrintStr
 	; 2
 	mov	#ScrWid*194.+12.+VADDR, R5
+	add	menuShiftY, R5
 	mov	#MsgMenu002, R0
 	call	PrintStr
 	; 5
 	mov	#ScrWid*206.+12.+VADDR, R5
+	add	menuShiftY, R5
 	mov	#MsgMenu003, R0
 	call	PrintStr
 	; START
 	mov	#ScrWid*228.+16.+VADDR, R5
+	add	menuShiftY, R5
 	mov	#MsgMenu006, R0
 	call	PrintStr
 	return
@@ -346,6 +369,7 @@ UpdateMenu:
 	add	#'A, R0
 	movb	R0, MsgMenu011+1
 	mov	#ScrWid*150.+44.+VADDR, R5
+	add	menuShiftY, R5
 	mov	#MsgMenu011, R0
 	call	PrintStr
 	; sound on off
@@ -354,6 +378,7 @@ UpdateMenu:
 	beq	10$
 	mov	#MsgMenu021, R0
 10$:	mov	#ScrWid*194.+36.+VADDR, R5
+	add	menuShiftY, R5
 	call	PrintStr
 	return
 
