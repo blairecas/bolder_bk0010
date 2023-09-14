@@ -355,7 +355,7 @@ DrawMenu:
 	mov	#MsgMenu003, R0
 	call	PrintStr
 	; START
-	mov	#ScrWid*228.+16.+VADDR, R5
+	mov	#ScrWid*226.+16.+VADDR, R5
 	add	menuShiftY, R5
 	mov	#MsgMenu006, R0
 	call	PrintStr
