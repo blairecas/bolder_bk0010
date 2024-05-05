@@ -8,17 +8,25 @@
 
 Start:	mtps	#200
 	mov	#1000, SP
+	mov	SP, @#4
  
-	; clear screen
-	mov	#1330, @#177664		; scroll screen to 0
-	call	ClearScreen
+	; check for BK-0011(M)
+	mov	@#177716, R0
+	clrb	R0
+	cmp	R0, #100000
+	beq	10$
+	mov	#C_RAM_BANKS56, @#177716	; (for 11M) - RAM banks 5,6
+	clr	@#177662			; (for 11M) - current screen buf 5
+	mov	#200000-3000, PlayNote4+4	; adjust notes duration for music
+	mov	#200000-3200, PlayNote5+4	; adjust pauses duration
 
-	mov	#StpInt, @#4
-	mov	#200, @#6
+10$:	; clear screen
+	mov	#1330, @#177664			; scroll screen to 0
+	call	ClearScreen
 
 	mov	#KbdInt, @#60
 	mov	#Ap2Int, @#274
-	bic	#^B01000000, @#177660	; allow keyboard interrupt
+	bic	#^B01000000, @#177660		; allow keyboard interrupt
 
 	; now all is set, allow interrupts
 	mtps	#0
@@ -344,9 +352,6 @@ TestJoyPort:
 ; 'empty' interrupt
 RtiAdr:	inc	(PC)+
 RtiCnt:	.word	0
-	rti
-
-StpInt:	sub	#2, (SP)
 	rti
 
 Ap2Int:

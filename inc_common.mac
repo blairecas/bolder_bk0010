@@ -2,6 +2,8 @@
 ; // Screen
 ; //////////////////////////////////////////////////////////////////////////////
 
+C_RAM_BANKS56 = ^B0001111100000000
+
 VAddr  = 40000			; video addr starts at
 ScrWid = 64.			; screen width in bytes
 

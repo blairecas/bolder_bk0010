@@ -475,7 +475,8 @@ PlayNote:
 	mov	#177777, @#177706
 	mov	#^B00010010, @#177712
 	; beeper on-off cycle
-10$:	mov	R0, 20$+2			; why not use registers for cycles?
+PlayNote1:
+	mov	R0, 20$+2			; why not use registers for cycles?
 	mov	R0, 30$+2			; .. don't know %)
 	mov	#320, @#177716
 20$:	dec	#000000
@@ -483,13 +484,15 @@ PlayNote:
 	mov	#220, @#177716
 30$:	dec	#000000
 	bne	30$
-40$:	cmp	@#177710, #200000-2200		; need adjustment by R0
-	bhi	10$
+PlayNote4:
+	cmp	@#177710, #200000-2200		; need adjustment by R0
+	bhi	PlayNote1
 	; pause timer
 	mov	#177777, @#177706
 	mov	#^B00010010, @#177712
-50$:	cmp	@#177710, #200000-2600
-	bhi	50$
+PlayNote5:
+	cmp	@#177710, #200000-2600
+	bhi	PlayNote5
 	return
 
 ; plays music (just one music is here)
@@ -996,20 +999,16 @@ ProcessMagicWall:
 ProcessFirefly:
 	; check it's explosion for contacting rockford or amebae
 	mov	#COBJ_EXP_SPACE_1+100000, R0	; will explode into space
-	movb	2(R5), R1
-	cmp	R1, #COBJ_AMOEBA
+	cmpb	2(R5), #COBJ_AMOEBA
 	blt	2$
 	jmp	ExplodeCurrent
-2$:	movb	80.(R5), R1
-	cmp	R1, #COBJ_AMOEBA
+2$:	cmpb	80.(R5), #COBJ_AMOEBA
 	blt	3$
 	jmp	ExplodeCurrent
-3$:	movb	-2(R5), R1
-	cmp	R1, #COBJ_AMOEBA
+3$:	cmpb	-2(R5), #COBJ_AMOEBA
 	blt	4$
 	jmp	ExplodeCurrent
-4$:	movb	-80.(R5), R1
-	cmp	R1, #COBJ_AMOEBA
+4$:	cmpb	-80.(R5), #COBJ_AMOEBA
 	blt	5$
 	jmp	ExplodeCurrent
 5$:	;
@@ -1054,20 +1053,16 @@ ProcessFirefly:
 ProcessButterfly:
 	; check it's explosion for contacting rockford or amebae
 	mov	#COBJ_EXP_DIAMOND_1+100000, R0	; will explode into diamond
-	movb	2(R5), R1
-	cmp	R1, #COBJ_AMOEBA
+	cmpb	2(R5), #COBJ_AMOEBA
 	blt	2$
 	jmp	ExplodeCurrent
-2$:	movb	80.(R5), R1
-	cmp	R1, #COBJ_AMOEBA
+2$:	cmpb	80.(R5), #COBJ_AMOEBA
 	blt	3$
 	jmp	ExplodeCurrent
-3$:	movb	-2(R5), R1
-	cmp	R1, #COBJ_AMOEBA
+3$:	cmpb	-2(R5), #COBJ_AMOEBA
 	blt	4$
 	jmp	ExplodeCurrent
-4$:	movb	-80.(R5), R1
-	cmp	R1, #COBJ_AMOEBA
+4$:	cmpb	-80.(R5), #COBJ_AMOEBA
 	blt	5$
 	jmp	ExplodeCurrent
 5$:	;
