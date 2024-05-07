@@ -3,23 +3,22 @@
 	.list	MEB
 	
 	.asect
-	.=1000
+	.=2000
 
 @include inc_common.mac
 
 Start:	mtps	#200
-	mov	#1000, SP
+	mov	#2000, SP
 	mov	SP, @#4
  
 	; check for BK-0011(M)
-	mov	@#177716, R0
-	clrb	R0
-	cmp	R0, #100000
+	cmpb	@#177717, #200
 	beq	10$
 	mov	#C_RAM_BANKS56, @#177716	; (for 11M) - RAM banks 5,6
 	clr	@#177662			; (for 11M) - current screen buf 5
 	mov	#200000-3000, PlayNote4+4	; adjust notes duration for music
 	mov	#200000-3200, PlayNote5+4	; adjust pauses duration
+	mov	#200000-10200, SpeedAdj+4	; adjust overall max speed
 
 10$:	; clear screen
 	mov	#1330, @#177664			; scroll screen to 0
@@ -55,13 +54,13 @@ MainCycle:
 	inc	FrameCount
 	clr	Animation
 	bit	#^B1, FrameCount
-	bne	20$
+	bne	SpeedAdj
 	mov	#100000, Animation
 	inc	AniCounter
 	bic	#^B1111111111111100, AniCounter
-20$:	; wait for timer (not needed though on real BK)
+SpeedAdj:
 	cmp	@#177710, #200000-6000
-	bhi	20$
+	bhi	SpeedAdj
 	; repeat cycle
 	br	MainCycle
 
@@ -170,7 +169,6 @@ MainPrelevel:
 	; run it
 	inc	CurrentMode
 	return
-
 
 ; 04 - play level
 MainLevel:

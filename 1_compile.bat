@@ -21,6 +21,6 @@ echo.
 echo ===========================================================================
 echo Linking V2
 echo ===========================================================================
-..\..\php5\php.exe -c ..\..\php5\ -f ..\scripts\lst2bin.php _cpu.lst ./release/bolde3.bin bbk
+..\..\php5\php.exe -c ..\..\php5\ -f ..\scripts\lst2bin.php _cpu.lst ./release/bolde3.bin bbk 2000
 
 echo.
