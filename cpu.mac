@@ -10,7 +10,7 @@
 Start:	mtps	#200
 	mov	#2000, SP
 	mov	SP, @#4
- 
+
 	; check for BK-0011(M)
 	cmpb	@#177717, #200
 	beq	10$
@@ -26,6 +26,7 @@ Start:	mtps	#200
 
 	mov	#KbdInt, @#60
 	mov	#Ap2Int, @#274
+	mov	#NoInt, @#100
 	bic	#^B01000000, @#177660		; allow keyboard interrupt
 
 	; now all is set, allow interrupts
@@ -352,6 +353,8 @@ TestJoyPort:
 RtiAdr:	inc	(PC)+
 RtiCnt:	.word	0
 	rti
+
+NoInt:	rti
 
 Ap2Int:
 	inc	KeyShift
