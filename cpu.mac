@@ -3,12 +3,12 @@
 	.list	MEB
 	
 	.asect
-	.=2000
+	.=1000
 
 @include inc_common.mac
 
 Start:	mtps	#200
-	mov	#2000, SP
+	mov	#1000, SP
 	mov	SP, @#4
 
 	; check for BK-0011(M)

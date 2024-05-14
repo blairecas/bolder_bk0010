@@ -1,26 +1,31 @@
 @echo off
 
 echo.
-echo ===========================================================================
 echo Graphics V2
 echo ===========================================================================
-..\..\php5\php.exe -c ..\..\php5\ -f convert_spr.php ./graphics/Tiles1.png
-..\..\php5\php.exe -c ..\..\php5\ -f convert_font.php
+php -f convert_spr.php ./graphics/Tiles1.png
+if %ERRORLEVEL% NEQ 0 ( exit /b )
+php -f convert_font.php
 if %ERRORLEVEL% NEQ 0 ( exit /b )
 
 echo.
+echo Compiling and pack CPU
 echo ===========================================================================
-echo Compiling V2
-echo ===========================================================================
-..\..\php5\php.exe -c ..\..\php5\ -f ..\scripts\preprocess.php cpu.mac
+php -f ..\scripts\preprocess.php cpu.mac
 if %ERRORLEVEL% NEQ 0 ( exit /b )
-..\scripts\macro11.exe -ysl 32 -yus -m ..\scripts\sysmac.sml -l _cpu.lst _cpu.mac
+..\scripts\macro11.exe -ysl 32 -yus -l _cpu.lst _cpu.mac
 if %ERRORLEVEL% NEQ 0 ( exit /b )
+php -f ..\scripts\lst2bin.php _cpu.lst _cpu.bin bin 1000
+if %ERRORLEVEL% NEQ 0 ( exit /b )
+..\scripts\zx0 -f -q _cpu.bin _cpu_lz.bin
 
 echo.
+echo Compiling BOLDE3
 echo ===========================================================================
-echo Linking V2
-echo ===========================================================================
-..\..\php5\php.exe -c ..\..\php5\ -f ..\scripts\lst2bin.php _cpu.lst ./release/bolde3.bin bbk 2000
+php -f ..\scripts\preprocess.php bolde3.mac
+if %ERRORLEVEL% NEQ 0 ( exit /b )
+..\scripts\macro11.exe -ysl 32 -yus -l _bolde3.lst _bolde3.mac
+if %ERRORLEVEL% NEQ 0 ( exit /b )
+php -f ..\scripts\lst2bin.php _bolde3.lst ./release/bolde3.bin bbk 2000
 
 echo.

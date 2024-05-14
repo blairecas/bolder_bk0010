@@ -1,0 +1,108 @@
+	.title	BOLDE3
+	.enabl	LC
+	; do not use AMA here, contains relocatable code
+
+	.asect
+	.=2000	; BK-0011M - use 2000 as start addr
+
+Start:	mtps	#200
+
+	; relocate unpacker to 40000
+	mov	#Loader, R1
+	mov	#40000, R2
+	mov	#LoaderEnd-Loader/2, R3
+	mov	(R1)+, (R2)+
+	sob	R3, .-2
+
+	; relocate packed code to 40500
+	mov	#CpuBin, R1
+	mov	#40500, R2
+	mov	#CpuBinEnd-CpuBin/2, R3
+	mov	(R1)+, (R2)+
+	sob	R3, .-2
+
+	; unpack then
+	jmp	@#40000
+
+Loader:	; clear 1000-40000
+	mov	#1000, R0
+	mov	#40000-1000/2, R3
+	clr	(R0)+
+	sob	R3, .-2
+
+	; unpack main code
+	mov	#40500, R0
+	mov	#1000, R1
+	mov	R1, SP
+	call	Unpack
+
+	jmp	(SP)
+
+; ZX0 v2.2 standart unpacker
+; original ZX0 encoder/decoder (c) Einar Saukas & Urusergi
+; PDP11 version by reddie, 02-may-2024 (upd)
+; usage:
+; R0 = source data addr (compressed)
+; R1 = addr for decompressing data
+; out:
+; R0 = next byte after the source data
+; R1 = next byte after the decompressed data
+Unpack:
+	clr	R2
+	movb	#200, R3
+	sxt	R5
+DZX0_LITERALS:
+	call	DZX0_ELIAS
+	movb	(R0)+, (R1)+
+	sob	R2, .-2
+	aslb	R3
+	bcs	DZX0_NEW_OFFSET
+	call	DZX0_ELIAS
+DZX0_COPY:
+	mov	R1, R4
+	add	R5, R4
+	movb	(R4)+, (R1)+
+	sob	R2, .-2
+	aslb	R3
+	bcc	DZX0_LITERALS
+DZX0_NEW_OFFSET:
+	mov	#-2, R2
+	call	DZX0_ELIAS_LOOP
+	incb	R2
+	bne	.+4
+DZX0_EXIT:
+	return
+	swab	R2
+	mov	R2, R5
+	clrb	R5
+	bisb	(R0)+, R5
+	asr	R5
+	mov	#1, R2
+	bcs	.+6
+	call	DZX0_ELIAS_BACKTRACK
+	inc	R2
+	br	DZX0_COPY
+DZX0_ELIAS:
+	incb	R2
+DZX0_ELIAS_LOOP:
+	aslb	R3
+	bne	DZX0_ELIAS_SKIP
+	movb	(R0)+, R3
+	rolb	R3
+DZX0_ELIAS_SKIP:
+	bcs	DZX0_EXIT
+DZX0_ELIAS_BACKTRACK:
+	aslb	R3
+	rol	R2
+	br	DZX0_ELIAS_LOOP
+
+LoaderEnd:
+
+; // Main program /////////////////////////////////////////////////////////////
+
+CpuBin:
+	@includebin _cpu_lz.bin
+	.even
+CpuBinEnd:
+
+	.end Start
