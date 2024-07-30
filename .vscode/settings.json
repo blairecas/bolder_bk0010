@@ -12,5 +12,7 @@
         "editor.codeLens": false,
 	"editor.detectIndentation": false,
 	"explorer.sortOrder": "type",
-	"editor.wordBasedSuggestions": "off"
+	"editor.wordBasedSuggestions": "off",
+	"files.autoGuessEncoding": false,
+	"files.encoding": "windows1251"
 }
