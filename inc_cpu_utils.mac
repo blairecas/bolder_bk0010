@@ -292,11 +292,11 @@ PrintStrVarY:
 	add	#ScrWid*12., VarY
 	return
 
-MsgMenu004:	.asciz	<2>"   0"<1>": "<3>"MAIN MENU"
-MsgMenu001:	.asciz	<2>"   1"<1>": "<3>"SET JOYSTICK"
-MsgMenu002:	.asciz	<2>"   2"<1>": "<3>"SOUND "
-MsgMenu003:	.asciz	<2>"   5"<1>": "<3>"LEVEL RESET"
-MsgMenu006:	.asciz	<3>"  PRESS "<2>"SPACE"
+MsgMenu00S:	.asciz	<2>"STOP "<1>"MAIN MENU"
+MsgMenu001:	.asciz	<2>"   1 "<1>"SET JOYSTICK"
+MsgMenu002:	.asciz	<2>"   2 "<1>"SOUND "
+MsgMenu000:	.asciz	<3>"   0 QUIT"
+MsgMenu0SP:	.asciz	<1>"PRESS "<2>"SPACE"
 
 MsgMenu010:	.asciz	<1>"SELECT CAVE"<1>":"
 MsgMenu011:	.asciz	<2>"A"
@@ -314,50 +314,33 @@ MsgNeoVersion:	.asciz	<1>"GRAPHICS BY "<2>"NEO SPECTRUMAN"
 DiaNeededSize:	.word	1
 
 DrawMenu:
-	clr	menuShiftY
-	; check for vanilla version
-	mov	#TilesCpuData, R0
-	mov	#1000, R3
-	clr	R1
-10$:	add	(R0)+, R1
-	sob	R3, 10$
-	cmp	R1, #43323
-	beq	20$
 	; lets assume it's neo spectruman version
-	mov	#ScrWid*8., menuShiftY
 	mov	#ScrWid*138.+6.+VADDR, R5
 	mov	#MsgNeoVersion, R0
 	call	PrintStr
-
-20$:	; select cave
-	mov	#ScrWid*150.+18.+VADDR, R5
-	add	menuShiftY, R5
+	; select cave
+	mov	#ScrWid*158.+18.+VADDR, R5
 	mov	#MsgMenu010, R0
 	call	PrintStr
-	; 0
-	mov	#ScrWid*170.+12.+VADDR, R5
-	add	menuShiftY, R5
-	mov	#MsgMenu004, R0
+	; STOP
+	mov	#ScrWid*178.+14.+VADDR, R5
+	mov	#MsgMenu00S, R0
 	call	PrintStr
 	; 1
-	mov	#ScrWid*182.+12.+VADDR, R5
-	add	menuShiftY, R5
+	mov	#ScrWid*190.+14.+VADDR, R5
 	mov	#MsgMenu001, R0
 	call	PrintStr
 	; 2
-	mov	#ScrWid*194.+12.+VADDR, R5
-	add	menuShiftY, R5
+	mov	#ScrWid*202.+14.+VADDR, R5
 	mov	#MsgMenu002, R0
 	call	PrintStr
-	; 5
-	mov	#ScrWid*206.+12.+VADDR, R5
-	add	menuShiftY, R5
-	mov	#MsgMenu003, R0
+	; 0
+	mov	#ScrWid*214.+14.+VADDR, R5
+	mov	#MsgMenu000, R0
 	call	PrintStr
 	; START
-	mov	#ScrWid*226.+16.+VADDR, R5
-	add	menuShiftY, R5
-	mov	#MsgMenu006, R0
+	mov	#ScrWid*234.+20.+VADDR, R5
+	mov	#MsgMenu0SP, R0
 	call	PrintStr
 	return
 
@@ -368,8 +351,7 @@ UpdateMenu:
 	mov	Level, R0
 	add	#'A, R0
 	movb	R0, MsgMenu011+1
-	mov	#ScrWid*150.+44.+VADDR, R5
-	add	menuShiftY, R5
+	mov	#ScrWid*158.+44.+VADDR, R5
 	mov	#MsgMenu011, R0
 	call	PrintStr
 	; sound on off
@@ -377,8 +359,7 @@ UpdateMenu:
 	tst	NoSound
 	beq	10$
 	mov	#MsgMenu021, R0
-10$:	mov	#ScrWid*194.+36.+VADDR, R5
-	add	menuShiftY, R5
+10$:	mov	#ScrWid*202.+36.+VADDR, R5
 	call	PrintStr
 	return
 

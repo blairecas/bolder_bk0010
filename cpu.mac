@@ -39,12 +39,7 @@ Start:	mtps	#200
 
 ; main program cycle
 MainCycle:
-	; key 0 - reset
-	tst	Key0
-	beq	10$
-	clr	Key0
-	clr	CurrentMode
-10$:	; run timer
+	; run timer
 	mov	#177777, @#177706
 	mov	#^B00010010, @#177712
 	; run procedures
@@ -90,8 +85,7 @@ MainReset:
 	call	UpdateMenu
 	call	PlayMusic
 	; start menu
-	clr	KeySpace
-	clr	KeyShift
+	call	ClearKeys
 	inc	CurrentMode
 	return
 
@@ -135,7 +129,13 @@ MainMenu:
 	beq	50$
 	clr	Key1
 	mov	#6., CurrentMode
-50$:	return
+50$:	; 0 - quit to BK reset
+	tst	Key0
+	beq	60$
+	mov	@#177716, R0
+	clrb	R0
+	jmp	(R0)
+60$:	return
 
 
 ; 02 - global prepare play
@@ -212,13 +212,7 @@ MainLevel:
 	call	FieldSetChanged		; mark all objects as 'need to draw'
 	inc	CurrentMode
 	br	99$
-50$:	; Key 5 - reset level
-	tst	Key5
-	beq	60$
-	clr	Key5
-	dec	CurrentMode
-	br	99$
-60$:	; Space - center Rockford
+50$:	; Space - center Rockford
 	tst	KeySpace
 	beq	99$
 	clr	KeySpace
@@ -278,6 +272,7 @@ MainJoySet:
 	dec	TempR3
 	bne	30$
 90$:	clr	CurrentMode
+	clr	KeyCurrent
 	return
 
 ; wait for joy input (or keypress)
@@ -300,17 +295,17 @@ SetJoyKey:
 99$:	return
 
 
-MsgJoy000:	.asciz	<2>"JOYSTICK SETUP"
-MsgJoy001:	.asciz	<2>"ANY KEY"<1>":"<3>" EXIT"
-MsgJoy002:	.asciz	<2>"CHECKING JOY PORT"
+MsgJoy000:	.asciz	<1>"JOYSTICK SETUP"
+MsgJoy001:	.asciz	<2>"ANY KEY TO "<3>"EXIT"
+MsgJoy002:	.asciz	<1>"CHECKING JOY PORT"
 MsgBadPort:	.asciz	<3>"PORT "<2>"177714 "<3>"HAVE BAD BITS"
-MsgOkPort:	.asciz	<3>"PORT OK"
+MsgOkPort:	.asciz	<2>"PORT OK"
 
-MsgJoy010:	.asciz	<3>"PRESS "<2>"UP"
-MsgJoy011:	.asciz	<3>"PRESS "<2>"DOWN"
-MsgJoy012:	.asciz	<3>"PRESS "<2>"LEFT"
-MsgJoy013:	.asciz	<3>"PRESS "<2>"RIGHT"
-MsgJoy014:	.asciz	<3>"PRESS "<2>"FIRE"
+MsgJoy010:	.asciz	<2>"PRESS "<3>"UP"
+MsgJoy011:	.asciz	<2>"PRESS "<3>"DOWN"
+MsgJoy012:	.asciz	<2>"PRESS "<3>"LEFT"
+MsgJoy013:	.asciz	<2>"PRESS "<3>"RIGHT"
+MsgJoy014:	.asciz	<2>"PRESS "<3>"FIRE"
 		.even
 
 MsgJoyTbl:	.word	MsgJoy010, MsgJoy011, MsgJoy012, MsgJoy013, MsgJoy014
@@ -496,7 +491,7 @@ KeysBegin:
 Key0:		.word	0, ^B110000
 Key1:		.word	0, ^B110001
 Key2:		.word	0, ^B110010
-Key5:		.word	0, ^B110101
+Key3:		.word	0, ^B110011
 KeyUp:		.word	0, ^B011010
 KeyDown:	.word	0, ^B011011
 KeyLeft:	.word	0, ^B001000
@@ -520,7 +515,6 @@ varObject:		.word	0
 varCmd:			.word	0
 varX:			.word	0
 varY:			.word	0
-menuShiftY:		.word	0
 varDx:			.word	0
 varDy:			.word	0
 varLength:		.word	0
