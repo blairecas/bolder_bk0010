@@ -295,7 +295,7 @@ PrintStrVarY:
 MsgMenu00S:	.asciz	<2>"STOP "<1>"MAIN MENU"
 MsgMenu001:	.asciz	<2>"   1 "<1>"SET JOYSTICK"
 MsgMenu002:	.asciz	<2>"   2 "<1>"SOUND "
-MsgMenu000:	.asciz	<3>"   0 QUIT"
+MsgMenu000:	.asciz	<3>"   0 RESET"
 MsgMenu0SP:	.asciz	<1>"PRESS "<2>"SPACE"
 
 MsgMenu010:	.asciz	<1>"SELECT CAVE"<1>":"

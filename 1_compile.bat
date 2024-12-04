@@ -31,6 +31,13 @@ if %ERRORLEVEL% NEQ 0 ( exit /b )
 php -f ../scripts/bin2wav.php ./release/bolde3.bin
 if %ERRORLEVEL% NEQ 0 ( exit /b )
 
+del _cpu.bin
+del _cpu_lz.bin
+del _cpu.mac
+del _cpu.lst
+del _bolde3.mac
+del _bolde3.lst
+
 start ..\..\bkemu\BK_x64.exe /C BK-0010-01 /B .\release\bolde3.bin
 
 echo.
