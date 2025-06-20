@@ -257,13 +257,15 @@ MainJoySet:
 	add	#ScrWid*12., VarY
 	call	TestJoyPort
 	add	#ScrWid*12., VarY
+	; for double-press var
+	clr	TempR2
 	; set keys
 	mov	#MsgJoyTbl, VarAddr
 	mov	#JoyKeys, TempR0
 	mov	#5., TempR3
 30$:	mov	@VarAddr, R0
 	add	#2., VarAddr
-	call	PrintStrVarY
+	call	PrintStrVarY				; press xxx
 	mov	TempR0, R0
 	call	SetJoyKey
 	tst	KeyCurrent
@@ -279,11 +281,16 @@ MainJoySet:
 ; R0 - where to put joy input (without bad bits)
 SetJoyKey:
 	clr	KeyCurrent
+	mov	TempR2, R2
 	; wait for press
 10$:	tst	KeyCurrent
 	bne	99$
 	mov	@#177714, R1
 	bic	JoyBadBits, R1
+	beq	10$
+	; check for double press
+	bis	R1, R2
+	cmp	TempR2, R2
 	beq	10$
 	mov	R1, (R0)
 	; wait for release
@@ -292,6 +299,7 @@ SetJoyKey:
 	mov	@#177714, R1
 	bic	JoyBadBits, R1
 	bne	20$
+	mov	R2, TempR2
 99$:	return
 
 
