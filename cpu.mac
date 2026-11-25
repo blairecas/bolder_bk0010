@@ -95,7 +95,6 @@ MainMenu:
 	; space / shift - run game
 	mov	KeySpace, R0
 	add	KeyShift, R0
-	tst	R0
 	beq	10$
 	clr	KeySpace
 	clr	KeyShift
